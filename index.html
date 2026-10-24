@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NUMBER RUSH</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#fff;font-family:Arial,sans-serif;padding:18px}
+header{font-size:25px;font-weight:900;letter-spacing:1px;margin:8px 0 22px}
+header span{color:#facc15}
+.panel{background:#151e32;border:1px solid #293653;border-radius:18px;padding:18px;margin-bottom:16px}
+.muted{color:#9caac4;font-size:13px}
+.balance{font-size:28px;color:#facc15;font-weight:bold;margin-top:7px}
+button{border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:bold;cursor:pointer}
+.main{width:100%;background:#facc15;color:#111827;margin-top:16px}
+.secondary{background:#26334d;color:white}
+.case{text-align:center;padding:26px 12px}
+.case-icon{font-size:48px}
+.number{font-size:21px;font-weight:bold;overflow-wrap:anywhere;margin:16px 0}
+.rarity{font-weight:bold;color:#d8b4fe}
+#message{min-height:20px;color:#cbd5e1;margin-top:12px;font-size:14px}
+.item{padding:13px 0;border-bottom:1px solid #293653}
+.item:last-child{border:0}
+.item button{padding:8px 12px;margin-left:8px}
+nav{display:flex;gap:8px;margin-bottom:15px}
+nav button{flex:1;padding:11px 4px;font-size:13px}
+</style>
+</head>
+<body>
+<header>NUMBER <span>RUSH</span></header>
+
+<div class="panel">
+  <div class="muted">ТВОЙ БАЛАНС</div>
+  <div class="balance"><span id="coins">2500</span> NC</div>
+  <button class="secondary" onclick="daily()">🎁 Ежедневный бонус</button>
+</div>
+
+<nav>
+  <button class="secondary" onclick="showTab('case')">🎰 Кейсы</button>
+  <button class="secondary" onclick="showTab('inventory')">📱 Коллекция</button>
+  <button class="secondary" onclick="showTab('tasks')">💰 Задания</button>
+</nav>
+
+<section id="case">
+  <div class="panel case">
+    <div class="case-icon">📲</div>
+    <h2>НОМЕРНОЙ КЕЙС</h2>
+    <div class="muted">Испытай удачу и найди редкий номер</div>
+    <div id="result">
+      <div class="number">+7 ??? ???-??-??</div>
+      <div class="muted">Твоя следующая находка</div>
+    </div>
+    <button class="main" onclick="openCase()">ОТКРЫТЬ КЕЙС · 500 NC</button>
+    <div id="message"></div>
+  </div>
+  <div class="muted">Все номера вымышлены и существуют только в игре.</div>
+</section>
+
+<section id="inventory" hidden>
+  <div class="panel">
+    <h3>🎒 ТВОЯ КОЛЛЕКЦИЯ</h3>
+    <div id="items">Пока номеров нет. Открой первый кейс!</div>
+  </div>
+</section>
+
+<section id="tasks" hidden>
+  <div class="panel">
+    <h3>💰 ИГРОВЫЕ ЗАДАНИЯ</h3>
+    <p>Открой 1 кейс — получи 300 NC.</p>
+    <button class="main" onclick="task()">ЗАБРАТЬ НАГРАДУ</button>
+    <div id="taskMessage" class="muted"></div>
+  </div>
+</section>
+
+<script>
+let coins=2500;
+let numbers=[];
+let opened=0;
+let dailyTaken=false;
+let taskTaken=false;
+
+const rarities=[
+ {name:"ОБЫЧНЫЙ",chance:55,color:"#cbd5e1",value:100},
+ {name:"СРЕДНИЙ",chance:28,color:"#4ade80",value:250},
+ {name:"БЛАТНОЙ",chance:12,color:"#60a5fa",value:600},
+ {name:"СЕКРЕТНЫЙ",chance:4.5,color:"#c084fc",value:1500},
+ {name:"МИФИК",chance:0.5,color:"#facc15",value:5000}
+];
+
+function save(){
+ try{localStorage.setItem("nr_demo",JSON.stringify({coins,numbers,opened,dailyTaken,taskTaken}))}catch(e){}
+}
+function load(){
+ try{
+  const d=JSON.parse(localStorage.getItem("nr_demo")||"null");
+  if(d){coins=d.coins;numbers=d.numbers||[];opened=d.opened||0;dailyTaken=!!d.dailyTaken;taskTaken=!!d.taskTaken}
+ }catch(e){}
+ render();
+}
+function render(){
+ document.getElementById("coins").textContent=coins.toLocaleString("ru-RU");
+ document.getElementById("items").innerHTML=numbers.length?numbers.map((n,i)=>
+  '<div class="item"><b style="color:'+n.color+'">'+n.rarity+'</b><br><div class="number">'+n.number+'</div><span class="muted">Цена продажи: '+n.value+' NC</span><br><button class="secondary" onclick="sell('+i+')">Продать</button></div>'
+ ).join(""):"Пока номеров нет. Открой первый кейс!";
+}
+function showTab(id){
+ ["case","inventory","tasks"].forEach(x=>document.getElementById(x).hidden=x!==id);
+}
+function openCase(){
+ if(coins<500){document.getElementById("message").textContent="Не хватает NC! Выполни задание.";return}
+ coins-=500;
+ let roll=Math.random()*100,sum=0,rarity=rarities[0];
+ for(const r of rarities){sum+=r.chance;if(roll<sum){rarity=r;break}}
+ const prefixes=["900","901","903","905","909","911","915","916","917","919","921","925","929","950","999"];
+ const digits=()=>Math.floor(Math.random()*10);
+ let a=Array.from({length:7},digits);
+ if(roll<0.5){a=[7,7,7,7,7,7,7]}
+ else if(rarity.name==="БЛАТНОЙ"){a=[5,5,5,digits(),digits(),digits(),digits()]}
+ else if(rarity.name==="СЕКРЕТНЫЙ"){a=[1,2,3,4,5,6,7]}
+ const number="+7 "+prefixes[Math.floor(Math.random()*prefixes.length)]+" "+a.slice(0,3).join("")+"-"+a.slice(3,5).join("")+"-"+a.slice(5,7).join("");
+ const item={number,rarity:rarity.name,color:rarity.color,value:rarity.value};
+ numbers.unshift(item);opened++;
+ document.getElementById("result").innerHTML='<div class="number">'+number+'</div><div style="color:'+rarity.color+';font-weight:bold;font-size:20px">'+rarity.name+'</div><div class="muted">Вымышленный игровой номер</div>';
+ document.getElementById("message").textContent="Номер добавлен в коллекцию!";
+ save();render();
+}
+function sell(i){
+ coins+=numbers[i].value;numbers.splice(i,1);save();render();
+}
+function daily(){
+ if(dailyTaken){alert("Ежедневный бонус уже получен!");return}
+ coins+=500;dailyTaken=true;save();render();alert("Ты получил 500 NC!");
+}
+function task(){
+ if(taskTaken){document.getElementById("taskMessage").textContent="Награда уже получена.";return}
+ if(opened<1){document.getElementById("taskMessage").textContent="Сначала открой хотя бы один кейс.";return}
+ coins+=300;taskTaken=true;save();render();
+ document.getElementById("taskMessage").textContent="Получено 300 NC!";
+}
+load();
+</script>
+</body>
+</html>
