@@ -3,143 +3,176 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f7fb">
 <title>NUMBER RUSH</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b1020;color:#fff;font-family:Arial,sans-serif;padding:18px}
-header{font-size:25px;font-weight:900;letter-spacing:1px;margin:8px 0 22px}
-header span{color:#facc15}
-.panel{background:#151e32;border:1px solid #293653;border-radius:18px;padding:18px;margin-bottom:16px}
-.muted{color:#9caac4;font-size:13px}
-.balance{font-size:28px;color:#facc15;font-weight:bold;margin-top:7px}
-button{border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:bold;cursor:pointer}
-.main{width:100%;background:#facc15;color:#111827;margin-top:16px}
-.secondary{background:#26334d;color:white}
-.case{text-align:center;padding:26px 12px}
-.case-icon{font-size:48px}
-.number{font-size:21px;font-weight:bold;overflow-wrap:anywhere;margin:16px 0}
-.rarity{font-weight:bold;color:#d8b4fe}
-#message{min-height:20px;color:#cbd5e1;margin-top:12px;font-size:14px}
-.item{padding:13px 0;border-bottom:1px solid #293653}
-.item:last-child{border:0}
-.item button{padding:8px 12px;margin-left:8px}
-nav{display:flex;gap:8px;margin-bottom:15px}
-nav button{flex:1;padding:11px 4px;font-size:13px}
+body{margin:0;background:#f5f7fb;color:#20263b;font-family:Arial,sans-serif}
+.app{max-width:480px;margin:auto;padding:18px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+h1{font-size:21px;margin:0;color:#6265ef}
+h2{font-size:27px;margin:10px 0}
+h3{font-size:17px}
+p,small{color:#7c8499}
+.box{background:white;border:1px solid #e8eaf2;border-radius:20px;padding:17px;margin-bottom:14px;box-shadow:0 5px 18px #20263b08}
+.balance{font-weight:bold;color:#6265ef}
+.hero{background:linear-gradient(135deg,#fff,#ededff);border:1px solid #dedfff}
+.badge{display:inline-block;background:#e5fbf1;color:#13865e;padding:8px 12px;border-radius:12px;font-size:12px;font-weight:bold}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:white;border:1px solid #e8eaf2;border-radius:15px;padding:12px 7px;text-align:center}
+.stat strong{display:block;font-size:20px;margin:7px 0}
+.sim{background:linear-gradient(135deg,#333b58,#151a2c);color:white;border-radius:23px;padding:20px;margin:14px 0}
+.sim small{color:#c5cce0}
+.number{font-size:22px;font-weight:bold;margin:25px 0 18px}
+button{border:0;border-radius:13px;padding:12px;background:#eeeeff;color:#6265ef;font-weight:bold;font-size:13px;cursor:pointer}
+.main{width:100%;background:linear-gradient(100deg,#6265ef,#8972f6);color:white;padding:16px;font-size:15px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:20px 0}
+.tabs button{padding:11px 3px;font-size:11px}
+.tabs button.active{background:#6265ef;color:white}
+.panel{display:none}.panel.active{display:block}
+.card{display:flex;align-items:center;gap:10px;background:white;border:1px solid #e8eaf2;border-radius:15px;padding:12px;margin:9px 0}
+.chip{background:#333b58;color:white;border-radius:9px;padding:12px;font-size:21px}
+.info{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}
+.info small{display:block;margin-top:5px}
+.common{color:#7d8496}.medium{color:#169d71}.blatonoy{color:#3478e5}.secret{color:#a044dc}.mythic{color:#c28b0b}
+.empty{text-align:center;padding:25px;color:#7c8499;background:white;border-radius:15px;line-height:1.6}
+.note{text-align:center;font-size:11px;line-height:1.5;color:#8b92a5;margin:20px 0}
+#toast{position:fixed;bottom:20px;left:10%;width:80%;background:#20263b;color:white;padding:13px;border-radius:13px;text-align:center;display:none}
 </style>
 </head>
 <body>
-<header>NUMBER <span>RUSH</span></header>
+<div class="app">
+<header>
+<div><h1>▣ NUMBER RUSH</h1><small>ТВОЯ КОЛЛЕКЦИЯ НОМЕРОВ</small></div>
+<div class="balance">🪙 <span id="balance">2500</span> NC</div>
+</header>
 
-<div class="panel">
-  <div class="muted">ТВОЙ БАЛАНС</div>
-  <div class="balance"><span id="coins">2500</span> NC</div>
-  <button class="secondary" onclick="daily()">🎁 Ежедневный бонус</button>
+<section class="box hero">
+<span class="badge">🎁 <span id="free">30</span> бесплатных открытий</span>
+<h2>Найди свой<br>идеальный номер</h2>
+<p>Собирай виртуальные SIM-карты и открывай редкости!</p>
+</section>
+
+<div class="stats">
+<div class="stat">📱<strong id="count">0</strong><small>Карточек</small></div>
+<div class="stat">💎<strong id="rare">0</strong><small>Редких</small></div>
+<div class="stat">🏆<strong id="level">1</strong><small>Уровень</small></div>
 </div>
 
-<nav>
-  <button class="secondary" onclick="showTab('case')">🎰 Кейсы</button>
-  <button class="secondary" onclick="showTab('inventory')">📱 Коллекция</button>
-  <button class="secondary" onclick="showTab('tasks')">💰 Задания</button>
-</nav>
+<h3>Твоя следующая SIM-карта</h3>
+<div class="sim">
+<strong id="operator">NUMBER RUSH</strong>
+<div class="number" id="number">+7 9XX XXX-XX-??</div>
+<small id="rarity">СЛУЧАЙНАЯ РЕДКОСТЬ</small>
+</div>
+<button class="main" id="spin">🎲 ОТКРЫТЬ SIM-КАРТУ</button>
+<p id="cost" style="text-align:center;font-size:11px">После бесплатных открытий — 500 NC</p>
 
-<section id="case">
-  <div class="panel case">
-    <div class="case-icon">📲</div>
-    <h2>НОМЕРНОЙ КЕЙС</h2>
-    <div class="muted">Испытай удачу и найди редкий номер</div>
-    <div id="result">
-      <div class="number">+7 ??? ???-??-??</div>
-      <div class="muted">Твоя следующая находка</div>
-    </div>
-    <button class="main" onclick="openCase()">ОТКРЫТЬ КЕЙС · 500 NC</button>
-    <div id="message"></div>
-  </div>
-  <div class="muted">Все номера вымышлены и существуют только в игре.</div>
+<div class="tabs">
+<button class="active" data-tab="collection">📱 Карты</button>
+<button data-tab="tasks">🎯 Задания</button>
+<button data-tab="daily">🎁 Бонус</button>
+<button data-tab="market">🛍️ Рынок</button>
+</div>
+
+<section class="panel active" id="collection">
+<h3>Моя коллекция</h3>
+<div id="cards" class="empty">Коллекция пока пуста.<br>Открой первую SIM-карту!</div>
 </section>
 
-<section id="inventory" hidden>
-  <div class="panel">
-    <h3>🎒 ТВОЯ КОЛЛЕКЦИЯ</h3>
-    <div id="items">Пока номеров нет. Открой первый кейс!</div>
-  </div>
+<section class="panel" id="tasks">
+<h3>Задания</h3>
+<div class="card"><div class="chip">🎲</div><div class="info"><b>Первая карта</b><small>Открой карту · +300 NC</small></div><button id="task1">Забрать</button></div>
+<div class="card"><div class="chip">📚</div><div class="info"><b>Коллекционер</b><small>Собери 5 карт · +500 NC</small></div><button id="task2">Забрать</button></div>
+<div class="card"><div class="chip">💎</div><div class="info"><b>Охотник за редкостью</b><small>Найди редкую карту · +400 NC</small></div><button id="task3">Забрать</button></div>
 </section>
 
-<section id="tasks" hidden>
-  <div class="panel">
-    <h3>💰 ИГРОВЫЕ ЗАДАНИЯ</h3>
-    <p>Открой 1 кейс — получи 300 NC.</p>
-    <button class="main" onclick="task()">ЗАБРАТЬ НАГРАДУ</button>
-    <div id="taskMessage" class="muted"></div>
-  </div>
+<section class="panel" id="daily">
+<h3>Ежедневный бонус</h3>
+<div class="card"><div class="chip">🎁</div><div class="info"><b>Бонус дня</b><small>Получай 700 NC раз в день</small></div><button id="dailyBtn">Забрать</button></div>
 </section>
+
+<section class="panel" id="market">
+<h3>Рынок игроков</h3>
+<div class="empty">Рынок пока находится в разработке.<br>Для реальных сделок между игроками потребуется сервер.</div>
+</section>
+
+<p class="note">Все номера вымышленные и замаскированы. Карты виртуальные, не являются реальными SIM-картами и не имеют денежной стоимости. Игра бесплатная.</p>
+</div>
+<div id="toast"></div>
 
 <script>
-let coins=2500;
-let numbers=[];
-let opened=0;
-let dailyTaken=false;
-let taskTaken=false;
-
+const $=id=>document.getElementById(id);
+const KEY='numberRushLightV1';
 const rarities=[
- {name:"ОБЫЧНЫЙ",chance:55,color:"#cbd5e1",value:100},
- {name:"СРЕДНИЙ",chance:28,color:"#4ade80",value:250},
- {name:"БЛАТНОЙ",chance:12,color:"#60a5fa",value:600},
- {name:"СЕКРЕТНЫЙ",chance:4.5,color:"#c084fc",value:1500},
- {name:"МИФИК",chance:0.5,color:"#facc15",value:5000}
+{id:'common',name:'Обычная',weight:55,value:80,cls:'common'},
+{id:'medium',name:'Средняя',weight:25,value:160,cls:'medium'},
+{id:'blatonoy',name:'Блатная',weight:13,value:350,cls:'blatonoy'},
+{id:'secret',name:'Секретная',weight:5,value:800,cls:'secret'},
+{id:'mythic',name:'Мифическая',weight:2,value:1800,cls:'mythic'}
 ];
-
-function save(){
- try{localStorage.setItem("nr_demo",JSON.stringify({coins,numbers,opened,dailyTaken,taskTaken}))}catch(e){}
-}
-function load(){
- try{
-  const d=JSON.parse(localStorage.getItem("nr_demo")||"null");
-  if(d){coins=d.coins;numbers=d.numbers||[];opened=d.opened||0;dailyTaken=!!d.dailyTaken;taskTaken=!!d.taskTaken}
- }catch(e){}
- render();
-}
+const operators=['Beeline','MTS','MegaFon','T2','SberMobile','Yota'];
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!data||typeof data.balance!=='number')data={balance:2500,free:30,cards:[],spins:0,claimed:{},daily:''};
+data.claimed=data.claimed||{};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function say(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2200)}
+function pick(){let n=Math.random()*100;for(const r of rarities){n-=r.weight;if(n<0)return r}return rarities[0]}
 function render(){
- document.getElementById("coins").textContent=coins.toLocaleString("ru-RU");
- document.getElementById("items").innerHTML=numbers.length?numbers.map((n,i)=>
-  '<div class="item"><b style="color:'+n.color+'">'+n.rarity+'</b><br><div class="number">'+n.number+'</div><span class="muted">Цена продажи: '+n.value+' NC</span><br><button class="secondary" onclick="sell('+i+')">Продать</button></div>'
- ).join(""):"Пока номеров нет. Открой первый кейс!";
+$('balance').textContent=data.balance.toLocaleString('ru-RU');
+$('free').textContent=data.free;
+$('count').textContent=data.cards.filter(c=>!c.sold).length;
+$('rare').textContent=data.cards.filter(c=>!c.sold&&c.rarity!=='common').length;
+$('level').textContent=1+Math.floor(data.spins/10);
+$('spin').textContent=data.free?'🎲 ОТКРЫТЬ SIM-КАРТУ · БЕСПЛАТНО':'🎲 ОТКРЫТЬ SIM-КАРТУ · 500 NC';
+$('cost').textContent=data.free?data.free+' бесплатных открытий осталось':'Одно открытие стоит 500 NC';
+$('spin').disabled=!data.free&&data.balance<500;
+let cards=data.cards.filter(c=>!c.sold);
+$('cards').className=cards.length?'':'empty';
+$('cards').innerHTML=cards.length?cards.map(c=>{
+let r=rarities.find(x=>x.id===c.rarity)||rarities[0];
+return '<div class="card"><div class="chip">▣</div><div class="info"><b>'+c.operator+'</b><small>'+c.number+'</small><small class="'+r.cls+'">'+r.name+' · '+c.value+' NC</small></div><button data-sell="'+c.id+'">Продать</button></div>'
+}).join(''):'Коллекция пока пуста.<br>Открой первую SIM-карту!';
+[['task1',data.spins>0,'spin',300],['task2',cards.length>=5,'collect',500],['task3',cards.some(c=>c.rarity!=='common'),'rare',400]].forEach(([id,ready,key,reward])=>{
+$(id).disabled=!ready||!!data.claimed[key];
+$(id).textContent=data.claimed[key]?'Получено':'Забрать';
+});
+let today=new Date().toLocaleDateString();
+$('dailyBtn').disabled=data.daily===today;
+$('dailyBtn').textContent=data.daily===today?'Получено':'Забрать 700 NC';
 }
-function showTab(id){
- ["case","inventory","tasks"].forEach(x=>document.getElementById(x).hidden=x!==id);
-}
-function openCase(){
- if(coins<500){document.getElementById("message").textContent="Не хватает NC! Выполни задание.";return}
- coins-=500;
- let roll=Math.random()*100,sum=0,rarity=rarities[0];
- for(const r of rarities){sum+=r.chance;if(roll<sum){rarity=r;break}}
- const prefixes=["900","901","903","905","909","911","915","916","917","919","921","925","929","950","999"];
- const digits=()=>Math.floor(Math.random()*10);
- let a=Array.from({length:7},digits);
- if(roll<0.5){a=[7,7,7,7,7,7,7]}
- else if(rarity.name==="БЛАТНОЙ"){a=[5,5,5,digits(),digits(),digits(),digits()]}
- else if(rarity.name==="СЕКРЕТНЫЙ"){a=[1,2,3,4,5,6,7]}
- const number="+7 "+prefixes[Math.floor(Math.random()*prefixes.length)]+" "+a.slice(0,3).join("")+"-"+a.slice(3,5).join("")+"-"+a.slice(5,7).join("");
- const item={number,rarity:rarity.name,color:rarity.color,value:rarity.value};
- numbers.unshift(item);opened++;
- document.getElementById("result").innerHTML='<div class="number">'+number+'</div><div style="color:'+rarity.color+';font-weight:bold;font-size:20px">'+rarity.name+'</div><div class="muted">Вымышленный игровой номер</div>';
- document.getElementById("message").textContent="Номер добавлен в коллекцию!";
- save();render();
-}
-function sell(i){
- coins+=numbers[i].value;numbers.splice(i,1);save();render();
-}
-function daily(){
- if(dailyTaken){alert("Ежедневный бонус уже получен!");return}
- coins+=500;dailyTaken=true;save();render();alert("Ты получил 500 NC!");
-}
-function task(){
- if(taskTaken){document.getElementById("taskMessage").textContent="Награда уже получена.";return}
- if(opened<1){document.getElementById("taskMessage").textContent="Сначала открой хотя бы один кейс.";return}
- coins+=300;taskTaken=true;save();render();
- document.getElementById("taskMessage").textContent="Получено 300 NC!";
-}
-load();
+$('spin').onclick=()=>{
+if(!data.free&&data.balance<500)return say('Не хватает NC. Выполни задания или забери бонус!');
+if(data.free)data.free--;else data.balance-=500;
+let r=pick(),op=operators[Math.floor(Math.random()*operators.length)];
+let tail=String(Math.floor(Math.random()*100)).padStart(2,'0');
+let c={id:Date.now()+Math.random(),operator:op,number:'+7 9XX XXX-XX-'+tail,rarity:r.id,value:r.value};
+data.cards.unshift(c);data.spins++;
+$('operator').textContent=op;$('number').textContent=c.number;
+$('rarity').textContent=r.name.toUpperCase();$('rarity').className=r.cls;
+save();say('Новая карта: '+r.name+'!');
+};
+$('cards').onclick=e=>{
+let b=e.target.closest('[data-sell]');if(!b)return;
+let c=data.cards.find(x=>String(x.id)===b.dataset.sell&&!x.sold);
+if(c){c.sold=true;data.balance+=c.value;save();say('Продано системе за '+c.value+' NC')}
+};
+[['task1','spin',300,()=>data.spins>0],['task2','collect',500,()=>data.cards.filter(c=>!c.sold).length>=5],['task3','rare',400,()=>data.cards.some(c=>!c.sold&&c.rarity!=='common')]].forEach(([id,key,reward,ready])=>{
+$(id).onclick=()=>{if(data.claimed[key]||!ready())return;data.claimed[key]=true;data.balance+=reward;save();say('Получено '+reward+' NC!')};
+});
+$('dailyBtn').onclick=()=>{
+let today=new Date().toLocaleDateString();if(data.daily===today)return;
+data.daily=today;data.balance+=700;save();say('Бонус: +700 NC!');
+};
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
+document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));
+document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));
+});
+if(window.Telegram&&window.Telegram.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand()}
+render();
 </script>
 </body>
 </html>
